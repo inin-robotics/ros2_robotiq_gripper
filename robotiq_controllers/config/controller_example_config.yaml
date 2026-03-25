@@ -1,0 +1,13 @@
+/**/robotiq_activation_controller:
+  ros__parameters:
+    update_rate: 50
+    default: true
+
+/**/robotiq_servo_controller:
+  ros__parameters:
+    update_rate: 50
+    command_topic: ~/commands
+    joint: $(var tf_prefix)robotiq_85_left_knuckle_joint
+    smooth_alpha: 0.05
+    min_position: 0.0
+    max_position: 0.792

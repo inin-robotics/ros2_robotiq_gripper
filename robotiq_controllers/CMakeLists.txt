@@ -8,10 +8,16 @@ endif()
 # find dependencies
 find_package(ament_cmake REQUIRED)
 find_package(controller_interface REQUIRED)
+find_package(rclcpp REQUIRED)
+find_package(realtime_tools REQUIRED)
+find_package(std_msgs REQUIRED)
 find_package(std_srvs REQUIRED)
 
 set(THIS_PACKAGE_INCLUDE_DEPENDS
   controller_interface
+  rclcpp
+  realtime_tools
+  std_msgs
   std_srvs
 )
 
@@ -19,6 +25,7 @@ include_directories(include)
 
 add_library(${PROJECT_NAME} SHARED
   src/robotiq_activation_controller.cpp
+  src/robotiq_servo_controller.cpp
 )
 
 target_include_directories(${PROJECT_NAME} PRIVATE
@@ -27,6 +34,9 @@ target_include_directories(${PROJECT_NAME} PRIVATE
 
 target_link_libraries(${PROJECT_NAME}
   controller_interface::controller_interface
+  rclcpp::rclcpp
+  realtime_tools::realtime_tools
+  ${std_msgs_TARGETS}
   ${std_srvs_TARGETS}
 )
 

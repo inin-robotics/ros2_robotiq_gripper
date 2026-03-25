@@ -8,16 +8,16 @@
   <maintainer email="marq.rasmussen@picknik.ai">Marq Rasmussen</maintainer>
   <license>BSD 3-Clause</license>
   <author>Cory Crean</author>
-
   <buildtool_depend>ament_cmake</buildtool_depend>
-
   <depend>controller_interface</depend>
+  <depend>rclcpp</depend>
+  <depend>realtime_tools</depend>
+  <depend>std_msgs</depend>
   <depend>std_srvs</depend>
-
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>ament_lint_common</test_depend>
-
   <export>
     <build_type>ament_cmake</build_type>
+    <controller_interface plugin="${prefix}/controller_plugins.xml"/>
   </export>
 </package>
