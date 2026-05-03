@@ -26,12 +26,12 @@ controller_interface::CallbackReturn RobotiqServoController::on_init()
 {
   auto_declare<std::string>("joint", "robotiq_85_left_knuckle_joint");
   auto_declare<std::string>("command_topic", "~/commands");
+  auto_declare<std::string>("openness_topic", "~/openness");
   auto_declare<double>("smooth_alpha", 0.3);
   auto_declare<double>("min_position", 0.0);
-  auto_declare<double>("max_position", 0.8);
+  auto_declare<double>("max_position", 0.792);
   return controller_interface::CallbackReturn::SUCCESS;
 }
-
 controller_interface::InterfaceConfiguration RobotiqServoController::command_interface_configuration() const
 {
   controller_interface::InterfaceConfiguration config;
@@ -63,6 +63,10 @@ RobotiqServoController::on_configure(const rclcpp_lifecycle::State& /*previous_s
     command_sub_ = get_node()->create_subscription<std_msgs::msg::Float64MultiArray>(
         command_topic_, rclcpp::SystemDefaultsQoS(),
         [this](const std_msgs::msg::Float64MultiArray::SharedPtr msg) { this->command_callback(msg); });
+
+    openness_pub_ = get_node()->create_publisher<std_msgs::msg::Float64>(
+        openness_topic_, rclcpp::SystemDefaultsQoS());
+    realtime_openness_pub_ = std::make_unique<realtime_tools::RealtimePublisher<std_msgs::msg::Float64>>(openness_pub_);
   }
   catch (const std::exception& e)
   {
@@ -126,6 +130,8 @@ controller_interface::CallbackReturn
 RobotiqServoController::on_cleanup(const rclcpp_lifecycle::State& /*previous_state*/)
 {
   command_sub_.reset();
+  realtime_openness_pub_.reset();
+  openness_pub_.reset();
   has_filtered_position_non_rt_ = false;
   active_command_ = ServoCommand{};
   return controller_interface::CallbackReturn::SUCCESS;
@@ -147,6 +153,19 @@ controller_interface::return_type RobotiqServoController::update(const rclcpp::T
   write_command_interface(command_interfaces_[POSITION_CMD], next_position);
   write_command_interface(command_interfaces_[MAX_VELOCITY_CMD], commanded_velocity);
   write_command_interface(command_interfaces_[MAX_EFFORT_CMD], commanded_effort);
+
+  const double current_position = state_interfaces_[POSITION_STATE].get_optional().value_or(min_position_);
+  if (realtime_openness_pub_)
+  {
+    const double denominator = std::max(1e-6, max_position_ - min_position_);
+    double normalized = (current_position - min_position_) / denominator;
+    normalized = std::clamp(normalized, 0.0, 1.0);
+    
+    std_msgs::msg::Float64 msg;
+    msg.data = 1.0 - normalized;
+    realtime_openness_pub_->try_publish(msg);
+  }
+
   return controller_interface::return_type::OK;
 }
 
@@ -154,6 +173,7 @@ bool RobotiqServoController::read_parameters()
 {
   joint_name_ = get_node()->get_parameter("joint").as_string();
   command_topic_ = get_node()->get_parameter("command_topic").as_string();
+  openness_topic_ = get_node()->get_parameter("openness_topic").as_string();
   smooth_alpha_ = get_node()->get_parameter("smooth_alpha").as_double();
   min_position_ = get_node()->get_parameter("min_position").as_double();
   max_position_ = get_node()->get_parameter("max_position").as_double();
@@ -166,6 +186,11 @@ bool RobotiqServoController::read_parameters()
   if (command_topic_.empty())
   {
     RCLCPP_ERROR(get_node()->get_logger(), "Parameter 'command_topic' must not be empty.");
+    return false;
+  }
+  if (openness_topic_.empty())
+  {
+    RCLCPP_ERROR(get_node()->get_logger(), "Parameter 'openness_topic' must not be empty.");
     return false;
   }
   if (min_position_ > max_position_)

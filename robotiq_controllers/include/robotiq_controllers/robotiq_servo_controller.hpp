@@ -6,6 +6,8 @@
 #include <controller_interface/controller_interface.hpp>
 #include <rclcpp/subscription.hpp>
 #include <realtime_tools/realtime_buffer.hpp>
+#include <realtime_tools/realtime_publisher.hpp>
+#include <std_msgs/msg/float64.hpp>
 #include <std_msgs/msg/float64_multi_array.hpp>
 
 namespace robotiq_controllers
@@ -56,6 +58,7 @@ private:
 
   std::string joint_name_;
   std::string command_topic_;
+  std::string openness_topic_;
   double smooth_alpha_ = 0.3;
   double min_position_ = 0.0;
   double max_position_ = 0.8;
@@ -65,5 +68,7 @@ private:
   realtime_tools::RealtimeBuffer<ServoCommand> rt_command_buffer_;
   ServoCommand active_command_;
   rclcpp::Subscription<std_msgs::msg::Float64MultiArray>::SharedPtr command_sub_;
+  rclcpp::Publisher<std_msgs::msg::Float64>::SharedPtr openness_pub_;
+  std::unique_ptr<realtime_tools::RealtimePublisher<std_msgs::msg::Float64>> realtime_openness_pub_;
 };
 }  // namespace robotiq_controllers
