@@ -11,3 +11,16 @@
     smooth_alpha: 0.05
     min_position: 0.0
     max_position: 0.792
+
+/**/robotiq_chunk_controller:
+  ros__parameters:
+    update_rate: 50
+    command_topic: ~/commands
+    openness_topic: ~/openness
+    joint: $(var tf_prefix)robotiq_85_left_knuckle_joint
+    smooth_alpha: 0.05
+    min_position: 0.0
+    max_position: 0.792
+    max_velocity: 0.15
+    max_effort: 1.0
+    chunk_dt: 0.0333

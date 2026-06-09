@@ -64,8 +64,7 @@ RobotiqServoController::on_configure(const rclcpp_lifecycle::State& /*previous_s
         command_topic_, rclcpp::SystemDefaultsQoS(),
         [this](const std_msgs::msg::Float64MultiArray::SharedPtr msg) { this->command_callback(msg); });
 
-    openness_pub_ = get_node()->create_publisher<std_msgs::msg::Float64>(
-        openness_topic_, rclcpp::SystemDefaultsQoS());
+    openness_pub_ = get_node()->create_publisher<std_msgs::msg::Float64>(openness_topic_, rclcpp::SystemDefaultsQoS());
     realtime_openness_pub_ = std::make_unique<realtime_tools::RealtimePublisher<std_msgs::msg::Float64>>(openness_pub_);
   }
   catch (const std::exception& e)
@@ -160,7 +159,7 @@ controller_interface::return_type RobotiqServoController::update(const rclcpp::T
     const double denominator = std::max(1e-6, max_position_ - min_position_);
     double normalized = (current_position - min_position_) / denominator;
     normalized = std::clamp(normalized, 0.0, 1.0);
-    
+
     std_msgs::msg::Float64 msg;
     msg.data = 1.0 - normalized;
     realtime_openness_pub_->try_publish(msg);

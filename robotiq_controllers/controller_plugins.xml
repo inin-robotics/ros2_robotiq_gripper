@@ -9,4 +9,9 @@
             This controller filters Robotiq position commands and forwards them directly to the gripper position command interface.
         </description>
   </class>
+  <class name="robotiq_controllers/RobotiqChunkController" type="robotiq_controllers::RobotiqChunkController" base_class_type="controller_interface::ControllerInterface">
+    <description>
+            This controller samples chunked Robotiq openness commands in time and forwards the interpolated target to the gripper position command interface.
+        </description>
+  </class>
 </library>

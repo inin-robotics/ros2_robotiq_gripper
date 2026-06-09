@@ -25,6 +25,7 @@ include_directories(include)
 
 add_library(${PROJECT_NAME} SHARED
   src/robotiq_activation_controller.cpp
+  src/robotiq_chunk_controller.cpp
   src/robotiq_servo_controller.cpp
 )
 
